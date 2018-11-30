@@ -1,0 +1,13 @@
+{
+
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es2017",
+        "rootDirs": [ "src" ],
+        "outDir": "build",
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "sourceMap": true
+    }
+
+}
