@@ -13,7 +13,7 @@ async function sleep( seconds: number ) {
 }
 
 async function doWork() {
-    let page = Number( fs.readFileSync( './page', { flag: 'w+' } ).toString() || '1' )
+    let page = Number( fs.readFileSync( './page', { flag: 'a+' } ).toString() || '1' )
 
     let ids: string[] = []
     let currentId = ''
