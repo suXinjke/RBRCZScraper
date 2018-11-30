@@ -6,6 +6,15 @@ import { createConnection, Connection } from 'typeorm'
 
 let db: Connection
 
+export async function tournamentExists( tournament_id: string ) {
+    if ( !db ) {
+        db = await createConnection()
+    }
+
+    const tournamentRepo = db.getRepository( Tournament )
+    return Boolean( await tournamentRepo.findOne( tournament_id ) )
+}
+
 export async function addTournament( tournament_id: string, tournament: TournamentData, stages: StageData[] ) {
     if ( !db ) {
         db = await createConnection()
