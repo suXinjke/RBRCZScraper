@@ -49,8 +49,8 @@ async function doWork() {
             fs.writeFileSync( './page', page.toString() )
             console.log( `Finished page ${page}` )
         } catch ( err ) {
-            console.log( err )
-            console.log( `failed to parse tournament ${currentId}` )
+            console.error( err )
+            console.error( `failed to parse tournament ${currentId}` )
         }
     } while ( ids.length > 0 )
 }
