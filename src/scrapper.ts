@@ -1,6 +1,7 @@
 import axios from 'axios'
 import * as $ from 'cheerio'
 import * as moment from 'moment'
+import * as csv_parser from 'csv-parse/lib/sync'
 
 const headers = {
     Cookie: 'lng=eng'
@@ -206,7 +207,9 @@ export const stageData = {
                 trackprogress,
                 weathercode, tyrescode, damagecode,
                 comment
-            ] = line.split( ';' )
+            ] = csv_parser( line, {
+                delimiter: ';'
+            } )[0]
 
             const stage_name_matches = stagename.match( /(.*)\(([^)]+)\)$/ )
 
