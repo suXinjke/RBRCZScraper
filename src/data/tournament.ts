@@ -1,12 +1,16 @@
-import { Entity, PrimaryColumn, Column, OneToMany, JoinTable } from 'typeorm'
+import { Entity, PrimaryColumn, Column, OneToMany, ManyToOne, JoinColumn } from 'typeorm'
 import { TournamentLeg } from './tournament_leg'
 import { Stage } from './stage'
+import { Driver } from './driver'
 
 @Entity( { name: 'tournaments' } )
 export class Tournament {
 
     @PrimaryColumn()
     public id: string
+
+    @Column( { nullable: true } )
+    public driver_id: string
 
     @Column( { default: '' } )
     public license: string

@@ -12,10 +12,22 @@ export async function tournamentExists( tournament_id: string ) {
     }
 
     const tournamentRepo = db.getRepository( Tournament )
-    return Boolean( await tournamentRepo.findOne( tournament_id ) )
+    return tournamentRepo.findOne( tournament_id )
 }
 
-export async function addTournament( tournament_id: string, tournament: TournamentData, stages: StageData[] ) {
+export async function mergeDriverIdToTournament( tournamentElement: TournamentListElement ) {
+    if ( !db ) {
+        db = await createConnection()
+    }
+
+    const tournamentRepo = db.getRepository( Tournament )
+    return tournamentRepo.update(
+        { id: tournamentElement.id }, { driver_id: tournamentElement.driver_id }
+    )
+
+}
+
+export async function addTournament( tournamentElement: TournamentListElement, tournament: TournamentData, stages: StageData[] ) {
     if ( !db ) {
         db = await createConnection()
     }
@@ -24,12 +36,6 @@ export async function addTournament( tournament_id: string, tournament: Tourname
     const tournamentRepo = db.getRepository( Tournament )
     const legRepo = db.getRepository( TournamentLeg )
     const stageRepo = db.getRepository( Stage )
-
-    let tournamentRecord = await tournamentRepo.findOne( tournament_id )
-    if ( tournamentRecord ) {
-        console.log( `tournament ${tournament_id} already exists` )
-        return
-    }
 
     await db.transaction( async transaction => {
 
@@ -48,6 +54,8 @@ export async function addTournament( tournament_id: string, tournament: Tourname
             } )
 
         drivers.push( ...( await transaction.save( unexisting_drivers ) ) )
+
+        let tournamentRecord: Tournament
 
         {
             const {
@@ -70,7 +78,8 @@ export async function addTournament( tournament_id: string, tournament: Tourname
             } = tournament
 
             tournamentRecord = await transaction.save( tournamentRepo.create( {
-                id: tournament_id,
+                id: tournamentElement.id,
+                driver_id: tournamentElement.driver_id,
 
                 license,
                 start_date_time,

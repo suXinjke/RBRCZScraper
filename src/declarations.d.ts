@@ -8,6 +8,11 @@ declare global {
         country_code: string,
     }
 
+    interface TournamentListElement {
+        id: string,
+        driver_id: string
+    }
+
     interface TournamentData {
         license: string,
         start_date_time: Date,

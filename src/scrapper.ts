@@ -14,7 +14,7 @@ export const pastTournaments = {
         } ) ).data as string
     },
 
-    getTournamentIds: ( html: string ) => {
+    parse: ( html: string ) => {
         const dom = $.load( html )
 
         const tables = dom( 'center' ).filter( function( i, e ) {
@@ -22,13 +22,19 @@ export const pastTournaments = {
         } ).next().children( 'tbody' )
 
         return tables.children().map( ( i, e ) => {
-            const link = $( e.children[0].firstChild ).attr( 'href' )
-            if ( !link ) {
+            const tournament_link = $( e.children[0].firstChild ).attr( 'href' )
+            const driver_link = $( e.children[7].firstChild ).attr( 'href' )
+            if ( !tournament_link || !driver_link ) {
                 return
             }
 
-            return link.match( /torid=(.+)&?/ )[1]
-        } ).get()
+            const listElement: TournamentListElement = {
+                id: tournament_link.match( /torid=(.+)&?/ )[1],
+                driver_id: driver_link.match( /u=(.+)&?/ )[1],
+            }
+
+            return listElement
+        } ).get() as TournamentListElement[]
     }
 }
 
