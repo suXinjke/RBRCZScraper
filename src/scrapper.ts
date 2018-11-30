@@ -133,13 +133,16 @@ export const tournamentPage = {
         } ).map( function() {
             const stuff = $( this ).children( 'td' ).children( 'span' )
 
-            const stage_range = $( stuff[1] ).text().match( /(\d+)\s*-\s*(\d+)/ )
+            const stage_range = $( stuff[1] ).text().match( /(\d+)(?:\s*-\s*(\d+))?/ )
             const leg_time_format = 'DD.MM.YYYY h:mm'
+
+            const stage_start_index = ( stage_range && stage_range[1] ) ? Number( stage_range[1] ) : 0
+            const stage_end_index = ( stage_range && stage_range[2] ) ? Number( stage_range[2] ) : stage_start_index
 
             const leg: TournamentLegData = {
                 index: Number( $( stuff[0] ).text() ),
-                stage_start_index: Number( stage_range[1] ),
-                stage_end_index: Number( stage_range[2] ),
+                stage_start_index,
+                stage_end_index,
                 start_date_time: moment( $( stuff[2] ).text(), leg_time_format ).toDate(),
                 end_date_time: moment( $( stuff[3] ).text(), leg_time_format ).toDate()
             }
