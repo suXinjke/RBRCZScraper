@@ -4,7 +4,7 @@ import { pastTournaments, stageData, tournamentPage } from './scrapper'
 import { addTournament } from './database'
 import * as zlib from 'zlib'
 
-const OUTPUT_DIR = './output'
+const OUTPUT_DIR = path.join( __dirname, 'output' )
 const TOURNAMENTS_DIR = path.join( OUTPUT_DIR, 'tournaments' )
 const TOURNAMENTS_AUX_DIR = path.join( OUTPUT_DIR, 'tournaments_aux_info' )
 const STAGE_RESULTS_DIR = path.join( OUTPUT_DIR, 'stage_results' )
@@ -21,7 +21,7 @@ async function sleep( seconds: number ) {
 
 async function scrapData() {
 
-    [ TOURNAMENTS_DIR, TOURNAMENTS_AUX_DIR, STAGE_RESULTS_DIR ].forEach( dirPath => {
+    [ OUTPUT_DIR, TOURNAMENTS_DIR, TOURNAMENTS_AUX_DIR, STAGE_RESULTS_DIR ].forEach( dirPath => {
         if ( !fs.existsSync( dirPath ) ) {
             fs.mkdirSync( dirPath )
         }
