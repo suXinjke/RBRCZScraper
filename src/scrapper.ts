@@ -197,9 +197,9 @@ export const stageData = {
     parse: ( csv: string ): StageData[] => {
 
         const data = csv
-        .split( '\r\n' )
+        .split( /\r?\n/ )
         .filter( ( line, index ) => {
-            return index !== 0 && line.trim().length > 0
+            return index !== 0 && line.trim().length > 0 && !line.startsWith( 'Warning' )
         } )
         .map<StageData>( line => {
             const [
