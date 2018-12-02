@@ -10,7 +10,9 @@ declare global {
 
     interface TournamentListElement {
         id: string,
-        driver_id: string
+        driver_id: string,
+        is_online: boolean,
+        is_offline: boolean
     }
 
     interface TournamentData {

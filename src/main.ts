@@ -1,6 +1,13 @@
 import * as fs from 'fs'
+import * as path from 'path'
 import { pastTournaments, stageData, tournamentPage } from './scrapper'
-import { addTournament, tournamentExists, mergeDriverIdToTournament } from './database'
+import { addTournament } from './database'
+import * as zlib from 'zlib'
+
+const OUTPUT_DIR = './output'
+const TOURNAMENTS_DIR = path.join( OUTPUT_DIR, 'tournaments' )
+const TOURNAMENTS_AUX_DIR = path.join( OUTPUT_DIR, 'tournaments_aux_info' )
+const STAGE_RESULTS_DIR = path.join( OUTPUT_DIR, 'stage_results' )
 
 function randomNumber( min, max ) {
     return Math.random() * ( max - min ) + min
@@ -12,7 +19,14 @@ async function sleep( seconds: number ) {
     } )
 }
 
-async function doWork() {
+async function scrapData() {
+
+    [ TOURNAMENTS_DIR, TOURNAMENTS_AUX_DIR, STAGE_RESULTS_DIR ].forEach( dirPath => {
+        if ( !fs.existsSync( dirPath ) ) {
+            fs.mkdirSync( dirPath )
+        }
+    } )
+
     let page = Number( fs.readFileSync( './page', { flag: 'a+' } ).toString() || '1' )
 
     let tournamentListElements: TournamentListElement[] = []
@@ -24,33 +38,23 @@ async function doWork() {
             tournamentListElements = pastTournaments.parse( await pastTournaments.fetch( page ) )
 
             for ( const element of tournamentListElements ) {
-                const { id, driver_id } = element
+                const { id } = element
+
+                fs.promises.writeFile( path.join( TOURNAMENTS_AUX_DIR, `${id}.json` ), JSON.stringify( element ) )
+
                 currentId = element.id
-
-                const existingTournament = await tournamentExists( id )
-                if ( existingTournament ) {
-                    console.log( `tournament ${id} already exists` )
-
-                    if ( !existingTournament.driver_id ) {
-                        await mergeDriverIdToTournament( element )
-                        console.log( `tournament ${id} got updated with driver_id ${driver_id}` )
-                    }
-
-                    continue
-                }
 
                 const [ tournamentHtml, stagesCsv ] = await Promise.all( [
                     tournamentPage.fetch( id ),
                     stageData.fetch( id )
                 ] )
 
-                const tournament = tournamentPage.parse( tournamentHtml )
-                const stages = stageData.parse( stagesCsv )
+                fs.promises.writeFile( path.join( TOURNAMENTS_DIR, `${id}.htmlz` ), zlib.gzipSync( tournamentHtml ) )
+                fs.promises.writeFile( path.join( STAGE_RESULTS_DIR, `${id}.csvz` ), zlib.gzipSync( stagesCsv ) )
 
-                await addTournament( element, tournament, stages )
                 console.log( `Finished tournament ${id}` )
 
-                await sleep( randomNumber( 1, 5 ) )
+                await sleep( randomNumber( 2, 3 ) )
             }
 
             console.log( `Finished page ${page}` )
@@ -64,8 +68,25 @@ async function doWork() {
     } while ( tournamentListElements.length > 0 )
 }
 
+async function parse() {
+
+    const compressedTournamentFiles = fs.readdirSync( TOURNAMENTS_DIR )
+    for ( const compressedTournamentFile of compressedTournamentFiles ) {
+        const tournament_id = path.basename( compressedTournamentFile, '.htmlz' )
+
+        const element = JSON.parse( fs.readFileSync( path.join( TOURNAMENTS_AUX_DIR, `${tournament_id}.json` ) ).toString() ) as TournamentListElement
+        const tournamentHtml = zlib.unzipSync( fs.readFileSync( path.join( TOURNAMENTS_DIR, `${tournament_id}.htmlz` ) ) ).toString()
+        const stagesCsv = zlib.unzipSync( fs.readFileSync( path.join( STAGE_RESULTS_DIR, `${tournament_id}.csvz` ) ) ).toString()
+
+        const tournament = tournamentPage.parse( tournamentHtml )
+        const stages = stageData.parse( stagesCsv )
+
+        await addTournament( element, tournament, stages )
+    }
+}
+
 async function main() {
-    await doWork()
+    await scrapData()
 }
 
 main()

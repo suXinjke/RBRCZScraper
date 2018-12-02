@@ -21,7 +21,8 @@ export const pastTournaments = {
             return $( this ).text().startsWith( 'Finished tournaments' )
         } ).next().children( 'tbody' )
 
-        return tables.children().map( ( i, e ) => {
+        return tables.children().map( function( i, e ) {
+            const row = $( this )
             const tournament_link = $( e.children[0].firstChild ).attr( 'href' )
             const driver_link = $( e.children[7].firstChild ).attr( 'href' )
             if ( !tournament_link || !driver_link ) {
@@ -31,6 +32,8 @@ export const pastTournaments = {
             const listElement: TournamentListElement = {
                 id: tournament_link.match( /torid=(.+)&?/ )[1],
                 driver_id: driver_link.match( /u=(.+)&?/ )[1],
+                is_online: row.children( 'td:nth-child(11)' ).children( 'img[title="Online tournament"]' ).length > 0,
+                is_offline: row.children( 'td:nth-child(11)' ).children( 'img[title="Offline tournament"]' ).length > 0
             }
 
             return listElement
