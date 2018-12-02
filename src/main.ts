@@ -59,14 +59,13 @@ async function doWork() {
         } catch ( err ) {
             console.error( err )
             console.error( `failed to parse tournament ${currentId}` )
+            tournamentListElements = []
         }
     } while ( tournamentListElements.length > 0 )
 }
 
 async function main() {
     await doWork()
-
-    // console.log( pastTournaments.parse( await pastTournaments.fetch( 1 ) ) )
 }
 
 main()
